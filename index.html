@@ -1,0 +1,1042 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>YUNX 战队 · 第五人格高校电竞</title>
+<style>
+  /* ===== 基础 ===== */
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html { scroll-behavior:smooth; }
+  body {
+    background:#0a0612;
+    color:#f0e8d4;
+    font-family:'Noto Serif SC',"Songti SC","STSong","SimSun","Times New Roman",serif;
+    overflow-x:hidden;
+    cursor:none;
+  }
+  a { color:inherit; text-decoration:none; }
+  ::selection { background:#c9a35a; color:#0a0612; }
+
+  /* 色板：
+     漆黑 #0a0612 / 墨紫 #1a0a25 / 深紫 #2a143a / 暗紫 #4a1f6b
+     暗金 #c9a35a / 烛金 #e8c878 / 暖白 #f0e8d4 / 雾灰 #8a8095
+     血绛 #6b1020（点缀）
+  */
+
+  /* 自定义光标 */
+  .cur {
+    position:fixed; width:8px; height:8px; border-radius:50%;
+    background:#e8c878; pointer-events:none; z-index:9999;
+    transform:translate(-50%,-50%); mix-blend-mode:screen;
+    box-shadow:0 0 12px #c9a35a,0 0 24px #c9a35a;
+  }
+  .cur.ring {
+    width:38px; height:38px; background:transparent;
+    border:1px solid #c9a35a; box-shadow:0 0 16px rgba(201,163,90,.5);
+    transition:width .25s,height .25s;
+  }
+
+  /* 雾气背景 */
+  .fog {
+    position:fixed; inset:0; z-index:-1; pointer-events:none;
+    background:
+      radial-gradient(60% 50% at 20% 30%, rgba(74,31,107,.35), transparent 70%),
+      radial-gradient(50% 50% at 85% 70%, rgba(107,16,32,.25), transparent 70%),
+      radial-gradient(70% 60% at 50% 100%, rgba(42,20,58,.5), transparent 70%);
+  }
+  .fog::before {
+    content:""; position:absolute; inset:0;
+    background:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='400'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2'/><feColorMatrix values='0 0 0 0 0.78  0 0 0 0 0.64  0 0 0 0 0.35  0 0 0 0.06 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+    opacity:.5; mix-blend-mode:overlay;
+  }
+
+  /* ===== 开屏 Splash ===== */
+  .splash {
+    position:fixed; inset:0; z-index:1000; overflow:hidden;
+    background:#000; cursor:pointer;
+  }
+
+  /* 底层：空楼梯 top.png —— 静态待点击，轻微呼吸 */
+  .splash-bg {
+    position:absolute; inset:0;
+    background:#000 url('top.png') center/cover no-repeat;
+    opacity:0;
+    animation:splashBgIn 1.2s .1s forwards;
+    filter:brightness(.65) contrast(1.05);
+  }
+  .splash-bg::after {
+    content:""; position:absolute; inset:0;
+    background:
+      radial-gradient(70% 70% at 50% 50%, transparent 0%, rgba(10,8,16,.15) 55%, rgba(0,0,0,.5) 100%),
+      linear-gradient(180deg, rgba(10,8,16,.2), rgba(0,0,0,.4));
+    animation:bgBreathe 6s infinite ease-in-out;
+  }
+  @keyframes splashBgIn { to { opacity:1; } }
+  @keyframes bgBreathe {
+    0%,100% { opacity:.7; }
+    50% { opacity:.9; }
+  }
+  /* 点击后 top 淡出 */
+  .splash-bg.fade-out { animation:splashBgOut 1.4s forwards; }
+  @keyframes splashBgOut {
+    0% { opacity:1; transform:scale(1.04); filter:blur(0) brightness(.7); }
+    100% { opacity:0; transform:scale(1.1); filter:blur(10px) brightness(.4); }
+  }
+
+  /* bg1 画布：从黑渐显 */
+  #particleCanvas {
+    position:absolute; inset:0; z-index:3; pointer-events:none;
+    opacity:0;
+    filter:blur(14px) brightness(0) contrast(0.5);
+  }
+  #particleCanvas.show { animation:bgReveal 3.6s cubic-bezier(.2,.7,.2,1) forwards; }
+  @keyframes bgReveal {
+    0% { opacity:0; filter:blur(14px) brightness(0) contrast(0.5); }
+    12% { opacity:1; }
+    45% { filter:blur(7px) brightness(.3) contrast(1.1); }
+    75% { filter:blur(2px) brightness(.65) contrast(1); }
+    100% { opacity:1; filter:blur(0) brightness(.78) contrast(1); }
+  }
+
+  /* 暗角呼吸 */
+  .splash-vignette {
+    position:absolute; inset:0; z-index:6; pointer-events:none;
+    background:radial-gradient(circle at 50% 50%, transparent 35%, rgba(0,0,0,.55) 80%, rgba(0,0,0,.95) 100%);
+    animation:vignettePulse 5s infinite ease-in-out;
+  }
+  @keyframes vignettePulse {
+    0%,100% { opacity:.85; }
+    50% { opacity:.7; }
+  }
+
+  .splash-content {
+    position:absolute; inset:0; display:flex; flex-direction:column;
+    align-items:center; justify-content:center; text-align:center; z-index:9;
+    padding:0 20px;
+  }
+
+  /* 初始点击提示 */
+  .splash-prompt {
+    position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+    z-index:10; text-align:center; pointer-events:none;
+    opacity:0; animation:promptIn 1.2s 1.4s forwards;
+  }
+  .splash-prompt .ring {
+    width:100px; height:100px; margin:0 auto 28px;
+    border:2px solid rgba(255,255,255,.8);
+    border-radius:50%;
+    position:relative;
+    animation:ringPulse 2s infinite ease-in-out;
+  }
+  .splash-prompt .ring::before, .splash-prompt .ring::after {
+    content:""; position:absolute; inset:-14px; border:1px solid rgba(255,255,255,.4);
+    border-radius:50%;
+  }
+  .splash-prompt .ring::after { inset:-30px; border-color:rgba(255,255,255,.2); }
+  .splash-prompt .ring .dot {
+    position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+    width:10px; height:10px; background:#fff; border-radius:50%;
+    box-shadow:0 0 20px #fff, 0 0 40px rgba(255,255,255,.8);
+  }
+  .splash-prompt .txt {
+    font-size:18px; letter-spacing:10px; color:#fff;
+    font-family:'Songti SC',serif;
+    text-shadow:0 0 16px rgba(255,255,255,.8), 0 2px 8px rgba(0,0,0,.8);
+  }
+  .splash-prompt .sub {
+    margin-top:12px; font-size:12px; letter-spacing:5px; color:#c8c8d0; font-style:italic;
+    text-shadow:0 1px 6px rgba(0,0,0,.8);
+  }
+  @keyframes promptIn { to { opacity:1; } }
+  @keyframes ringPulse {
+    0%,100% { transform:scale(1); opacity:.9; }
+    50% { transform:scale(1.1); opacity:.5; }
+  }
+  .splash-prompt.hide { animation:promptOut .4s forwards; }
+  @keyframes promptOut { to { opacity:0; transform:translate(-50%,-50%) scale(.8); } }
+
+  /* 主标 YUNX：颗粒汇聚完成后从近推远 */
+  .splash-logo {
+    display:block; width:min(72vw, 760px); height:auto;
+    margin:0 auto;
+    opacity:0;
+  }
+  .splash-logo.recede {
+    animation:logoRecede 2.2s cubic-bezier(.2,.7,.2,1) forwards;
+  }
+  @keyframes logoRecede {
+    0% { opacity:0; transform:scale(2.8); filter:blur(24px) brightness(1.6); }
+    18% { opacity:1; transform:scale(2.4); filter:blur(18px) brightness(1.4); }
+    35% { transform:scale(1.8); filter:blur(8px) brightness(1.05); }
+    70% { transform:scale(1.08); filter:blur(2px) brightness(1); }
+    100% { opacity:1; transform:scale(1); filter:blur(0) brightness(1); }
+  }
+  .splash-logo .ch {
+    opacity:1;
+    transform-origin:center center;
+    transform-box:fill-box;
+  }
+
+  /* 底部细字提示 */
+  .splash-hint {
+    position:absolute; bottom:48px; left:50%; transform:translateX(-50%);
+    z-index:10; font-size:11px; letter-spacing:6px; color:#7a7a85;
+    font-family:'Cormorant Garamond','Noto Serif SC',serif; font-style:italic;
+    opacity:0;
+    display:flex; align-items:center; gap:14px;
+  }
+  .splash-hint.show { animation:hintIn 2s forwards; }
+  .splash-hint .dot { width:4px; height:4px; background:#d0d0d8; border-radius:50%; box-shadow:0 0 8px #e8e8e8; }
+  @keyframes hintIn {
+    0%,30% { opacity:0; }
+    100% { opacity:.7; }
+  }
+
+  /* 退出 */
+  .splash.fade-out { animation:splashOut 1.4s cubic-bezier(.6,.05,.3,1) forwards; }
+  @keyframes splashOut {
+    0% { opacity:1; transform:scale(1); filter:brightness(1); }
+    35% { filter:brightness(2); }
+    100% { opacity:0; transform:scale(1.08); filter:brightness(1.5); pointer-events:none; }
+  }
+
+  /* 主站启动后保留首屏 hero（与 splash 共享 bg1） */
+  header.hero {
+    position:relative; min-height:100vh; display:flex; align-items:center;
+    justify-content:center; text-align:center; overflow:hidden;
+  }
+  .hero-bg {
+    position:absolute; inset:0; background:#000 url('bg1.jpg') center/cover no-repeat;
+  }
+  .hero-bg::after {
+    content:""; position:absolute; inset:0;
+    background:linear-gradient(180deg, rgba(10,6,18,.55) 0%, rgba(10,6,18,.4) 50%, rgba(10,6,18,.95) 100%);
+  }
+  .hero-content { position:relative; z-index:2; padding:0 20px; }
+  .hero h1 {
+    font-family:'Trajan Pro','Copperplate Gothic Bold','Cinzel','Cambria','Georgia',serif;
+    font-weight:900;
+    font-size:clamp(72px,16vw,220px); letter-spacing:18px;
+    margin-right:-18px; line-height:1; color:#f0e8d4;
+    background:linear-gradient(180deg,#fff 0%,#e8c878 45%,#c9a35a 80%,#6b4a1f 100%);
+    -webkit-background-clip:text; background-clip:text;
+    -webkit-text-fill-color:transparent;
+    filter:drop-shadow(0 0 36px rgba(201,163,90,.5)) drop-shadow(0 6px 12px rgba(0,0,0,.6));
+  }
+  .hero .eyebrow { font-size:12px; letter-spacing:10px; color:#c9a35a; margin-bottom:24px; }
+  .hero .tagline {
+    margin-top:30px; font-size:clamp(14px,1.8vw,18px); letter-spacing:6px; color:#c8bca0;
+    font-style:italic;
+  }
+  .scroll-cue {
+    position:absolute; bottom:36px; left:50%; transform:translateX(-50%);
+    font-size:11px; letter-spacing:4px; color:#8a8095; z-index:3;
+  }
+  .scroll-cue::after {
+    content:""; display:block; width:1px; height:46px; margin:14px auto 0;
+    background:linear-gradient(180deg,#c9a35a,transparent);
+    animation:drip 2.4s infinite;
+  }
+  @keyframes drip { 0%{transform-origin:top; transform:scaleY(0); opacity:0;} 30%{opacity:1;} 100%{transform:scaleY(1); opacity:0;} }
+
+  /* ===== 导航 ===== */
+  nav {
+    position:fixed; top:0; left:0; right:0; z-index:100;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:22px 50px;
+    backdrop-filter:blur(14px);
+    background:linear-gradient(180deg, rgba(10,6,18,.88), rgba(10,6,18,.3));
+    border-bottom:1px solid rgba(201,163,90,.2);
+  }
+  .logo {
+    font-size:24px; letter-spacing:8px; font-weight:400;
+    color:#f0e8d4; margin-right:-8px;
+  }
+  .logo .accent { color:#c9a35a; }
+  .nav-links { display:flex; gap:36px; list-style:none; }
+  .nav-links a {
+    font-size:13px; letter-spacing:4px; position:relative; padding:6px 0;
+    color:#c8bca0; transition:color .3s;
+  }
+  .nav-links a::after {
+    content:""; position:absolute; bottom:0; left:50%; transform:translateX(-50%);
+    width:0; height:1px; background:#c9a35a; transition:width .4s;
+  }
+  .nav-links a:hover { color:#e8c878; }
+  .nav-links a:hover::after { width:100%; }
+  .nav-cta {
+    padding:10px 22px; border:1px solid #c9a35a; color:#e8c878;
+    font-size:12px; letter-spacing:4px; transition:all .3s; cursor:none;
+  }
+  .nav-cta:hover { background:rgba(201,163,90,.12); box-shadow:0 0 24px rgba(201,163,90,.3); }
+
+  /* ===== 通用 section ===== */
+  section { padding:140px 60px; max-width:1280px; margin:0 auto; }
+  .eyebrow-line {
+    font-size:11px; letter-spacing:8px; color:#c9a35a; text-transform:uppercase;
+    margin-bottom:18px; display:flex; align-items:center; gap:16px;
+  }
+  .eyebrow-line::before, .eyebrow-line::after {
+    content:""; flex:0 0 60px; height:1px;
+    background:linear-gradient(90deg,transparent,#c9a35a,transparent);
+  }
+  .eyebrow-line.left { justify-content:flex-start; }
+  .eyebrow-line.left::before { display:none; }
+  .sec-title {
+    font-size:clamp(34px,5vw,58px); font-weight:400; letter-spacing:6px;
+    margin-bottom:24px; line-height:1.3; color:#f0e8d4;
+  }
+  .sec-title .gold { color:#c9a35a; font-style:italic; }
+  .sec-sub {
+    color:#8a8095; font-size:16px; line-height:2; max-width:680px;
+    margin-bottom:70px; font-style:italic; font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+  }
+
+  /* 装饰花纹分隔 */
+  .ornament {
+    display:flex; align-items:center; justify-content:center; gap:18px;
+    color:#c9a35a; margin:0 auto 60px; opacity:.5;
+  }
+  .ornament::before, .ornament::after {
+    content:""; width:120px; height:1px;
+    background:linear-gradient(90deg,transparent,#c9a35a,transparent);
+  }
+  .ornament .dot {
+    width:8px; height:8px; border:1px solid #c9a35a; transform:rotate(45deg);
+  }
+  .ornament .diamond {
+    width:14px; height:14px; border:1px solid #c9a35a; transform:rotate(45deg);
+    background:rgba(201,163,90,.1);
+  }
+
+  /* ===== 战队大合照 ===== */
+  .team-photo {
+    margin: 48px 0 56px;
+  }
+  .team-photo-wrap {
+    position:relative;
+    border:1px solid rgba(201,163,90,.3);
+    overflow:hidden;
+  }
+  .team-photo-wrap::before {
+    content:""; position:absolute; inset:0; z-index:2; pointer-events:none;
+    background:
+      linear-gradient(180deg, transparent 60%, rgba(10,6,18,.85) 100%),
+      radial-gradient(circle at 50% 50%, transparent 40%, rgba(0,0,0,.45) 100%);
+  }
+  .team-photo img {
+    width:100%; height:auto; display:block;
+    filter:contrast(1.05) saturate(.95);
+    transition:transform .8s ease, filter .8s ease;
+  }
+  .team-photo-wrap:hover img {
+    transform:scale(1.03);
+    filter:contrast(1.1) saturate(1);
+  }
+  .team-photo-caption {
+    position:absolute; bottom:0; left:0; right:0; z-index:3;
+    padding:28px 36px 22px;
+    display:flex; align-items:baseline; gap:20px;
+  }
+  .cp-tag {
+    font-size:12px; letter-spacing:6px; color:#c9a35a;
+    font-family:"Songti SC",serif; font-weight:700;
+    padding:4px 14px; border:1px solid rgba(201,163,90,.6);
+    background:rgba(10,6,18,.5);
+    backdrop-filter:blur(4px);
+  }
+  .cp-text {
+    font-size:14px; color:#d8ccb0; letter-spacing:2px;
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+  }
+
+  /* ===== 战队介绍 ===== */
+  .intro-grid {
+    display:grid; grid-template-columns:1.1fr 1fr; gap:80px; align-items:stretch;
+  }
+  .intro-left {
+    display:flex; flex-direction:column; justify-content:space-between; gap:30px;
+  }
+  .intro-text p {
+    color:#c8bca0; font-size:16px; line-height:2.2; margin-bottom:24px;
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+  }
+  .intro-text p .drop {
+    float:left; font-size:64px; line-height:.9; padding:6px 14px 0 0;
+    color:#c9a35a; font-family:"Songti SC",serif; font-weight:400;
+  }
+  .creed {
+    margin-top:40px; padding:30px 36px;
+    border-left:2px solid #c9a35a;
+    background:linear-gradient(90deg, rgba(201,163,90,.08), transparent);
+    font-size:18px; line-height:1.9; color:#e8c878; font-style:italic;
+    letter-spacing:2px;
+  }
+  .creed .signature { display:block; margin-top:14px; font-size:13px;
+    color:#8a8095; letter-spacing:4px; font-style:normal; }
+
+  .member-list {
+    display:grid; grid-template-columns:1fr; gap:22px;
+  }
+  .member-photo {
+    position:relative; overflow:hidden;
+    border:1px solid rgba(201,163,90,.25);
+    aspect-ratio: 16 / 9;
+    transition:all .5s cubic-bezier(.2,.7,.2,1);
+    cursor:none;
+  }
+  .member-photo img {
+    width:100%; height:100%; object-fit:cover; display:block;
+    filter:brightness(.82) contrast(1.05) saturate(.95);
+    transition:transform .8s ease, filter .5s ease;
+  }
+  .member-photo:hover { border-color:#c9a35a; box-shadow:0 12px 50px rgba(201,163,90,.25); }
+  .member-photo:hover img { transform:scale(1.04); filter:brightness(.95) contrast(1.1) saturate(1); }
+  .member-photo.vertical {
+    aspect-ratio: 3 / 4;
+  }
+  .member-photo.vertical::before {
+    content:""; position:absolute; inset:0; z-index:2; pointer-events:none;
+    background:linear-gradient(180deg, transparent 55%, rgba(10,6,18,.85) 100%);
+  }
+  .photo-caption {
+    position:absolute; bottom:0; left:0; right:0; z-index:3;
+    padding:18px 20px; text-align:center;
+    font-size:15px; letter-spacing:6px; color:#f0e8d4;
+    font-family:"Songti SC",serif;
+    text-shadow:0 2px 12px rgba(0,0,0,.8);
+  }
+
+  /* ===== 广白杯：三张图卡片 ===== */
+  .event-grid {
+    display:grid; grid-template-columns:repeat(3,1fr); gap:24px;
+    margin-top:8px;
+  }
+  .event-card {
+    position:relative; overflow:hidden;
+    border:1px solid rgba(201,163,90,.25);
+    background:rgba(10,6,18,.4);
+    aspect-ratio: 3 / 4;
+    transition:all .5s cubic-bezier(.2,.7,.2,1);
+    cursor:none;
+  }
+  .event-card img {
+    width:100%; height:100%; object-fit:cover; display:block;
+    filter:brightness(.75) contrast(1.05);
+    transition:transform .8s ease, filter .5s ease;
+  }
+  .event-card::before {
+    content:""; position:absolute; inset:0; z-index:2; pointer-events:none;
+    background:linear-gradient(180deg, transparent 50%, rgba(10,6,18,.92) 100%);
+  }
+  .event-card:hover { border-color:#c9a35a; box-shadow:0 12px 50px rgba(201,163,90,.25); }
+  .event-card:hover img { transform:scale(1.06); filter:brightness(.9) contrast(1.1); }
+  .event-card .cap {
+    position:absolute; bottom:0; left:0; right:0; z-index:3;
+    padding:22px 22px 18px;
+  }
+  .event-card .cap .num { font-size:11px; letter-spacing:5px; color:#c9a35a; margin-bottom:8px; }
+  .event-card .cap h4 { font-size:18px; letter-spacing:3px; color:#f0e8d4; font-weight:400; margin-bottom:6px; }
+  .event-card .cap p { font-size:12px; color:#a89e88; line-height:1.7; font-family:"PingFang SC",sans-serif; }
+
+  /* ===== CPL 赛事（重点板块） ===== */
+  #cpl {
+    position:relative; padding:120px 0;
+    background:
+      radial-gradient(circle at 50% 0%, rgba(201,163,90,.1), transparent 55%),
+      linear-gradient(180deg, rgba(74,31,107,.18), rgba(10,6,18,.4));
+    border-top:1px solid rgba(201,163,90,.15);
+    border-bottom:1px solid rgba(201,163,90,.15);
+  }
+  .cpl-inner { max-width:1280px; margin:0 auto; padding:0 50px; }
+  .cpl-hero {
+    display:grid; grid-template-columns:1.1fr 1fr; gap:60px; align-items:center;
+    margin-top:50px;
+  }
+  .cpl-visual {
+    position:relative; border:1px solid rgba(201,163,90,.35); overflow:hidden;
+  }
+  .cpl-visual::before {
+    content:""; position:absolute; inset:0; z-index:2; pointer-events:none;
+    background:
+      linear-gradient(90deg, rgba(10,6,18,.5), transparent 40%),
+      radial-gradient(circle at 30% 50%, transparent 30%, rgba(0,0,0,.5) 100%);
+  }
+  .cpl-visual::after {
+    content:"CPL"; position:absolute; right:-12px; bottom:-24px; z-index:3;
+    font-family:"Trajan Pro","Songti SC",serif; font-size:180px; font-weight:700;
+    color:rgba(201,163,90,.08); letter-spacing:10px; line-height:1; pointer-events:none;
+  }
+  .cpl-visual img { width:100%; height:100%; object-fit:cover; display:block; filter:contrast(1.05) saturate(.9); }
+  .cpl-info .cpl-tag {
+    display:inline-block; font-size:12px; letter-spacing:6px; color:#c9a35a;
+    padding:6px 16px; border:1px solid rgba(201,163,90,.5); margin-bottom:24px;
+  }
+  .cpl-info h3 {
+    font-size:clamp(32px,4.5vw,52px); letter-spacing:6px; color:#f0e8d4;
+    font-weight:400; line-height:1.2; margin-bottom:20px;
+  }
+  .cpl-info h3 .gold { color:#c9a35a; }
+  .cpl-info .lead {
+    font-size:16px; line-height:2.1; color:#c8bca0; margin-bottom:28px;
+    font-family:"PingFang SC",sans-serif;
+  }
+  .cpl-stats {
+    display:grid; grid-template-columns:repeat(3,1fr); gap:24px; margin-top:36px;
+  }
+  .cpl-stat {
+    padding:20px 16px; border-top:1px solid rgba(201,163,90,.3);
+  }
+  .cpl-stat .v { font-size:32px; color:#c9a35a; font-family:"Songti SC",serif; line-height:1; margin-bottom:8px; }
+  .cpl-stat .l { font-size:12px; letter-spacing:3px; color:#a89e88; }
+
+  .cpl-gallery {
+    display:grid; grid-template-columns:repeat(2,1fr); gap:24px;
+    margin-top:50px;
+  }
+  .cpl-gallery-item {
+    position:relative; overflow:hidden;
+    border:1px solid rgba(201,163,90,.25);
+    aspect-ratio: 3 / 4;
+    transition:all .5s cubic-bezier(.2,.7,.2,1);
+    cursor:none;
+  }
+  .cpl-gallery-item img {
+    width:100%; height:100%; object-fit:cover; display:block;
+    filter:brightness(.78) contrast(1.05) saturate(.92);
+    transition:transform .8s ease, filter .5s ease;
+  }
+  .cpl-gallery-item:hover { border-color:#c9a35a; box-shadow:0 12px 50px rgba(201,163,90,.25); }
+  .cpl-gallery-item:hover img { transform:scale(1.06); filter:brightness(.92) contrast(1.1) saturate(1); }
+
+  /* ===== IVL 官方舞台（金雨） ===== */
+  .ivl-section {
+    position:relative; padding:0; overflow:hidden;
+    min-height:90vh; display:flex; align-items:center; justify-content:center;
+  }
+  .ivl-bg { position:absolute; inset:0; }
+  .ivl-bg img {
+    width:100%; height:100%; object-fit:cover; display:block;
+    filter:brightness(.45) contrast(1.1) saturate(.85);
+  }
+  .ivl-overlay {
+    position:absolute; inset:0;
+    background:
+      radial-gradient(circle at 50% 45%, transparent 30%, rgba(10,6,18,.5) 75%, rgba(0,0,0,.85) 100%),
+      linear-gradient(180deg, rgba(10,6,18,.4), rgba(10,6,18,.3) 50%, rgba(10,6,18,.7));
+  }
+  #goldRain {
+    position:absolute; inset:0; width:100%; height:100%;
+    pointer-events:none; z-index:2;
+  }
+  .ivl-content {
+    position:relative; z-index:3; text-align:center;
+    padding:0 40px; max-width:900px;
+  }
+  .ivl-tag {
+    display:inline-block; font-size:12px; letter-spacing:8px; color:#c9a35a;
+    padding:6px 18px; border:1px solid rgba(201,163,90,.5);
+    margin-bottom:28px;
+    background:rgba(10,6,18,.4); backdrop-filter:blur(4px);
+  }
+  .ivl-title {
+    font-size:clamp(28px,4.5vw,52px); letter-spacing:6px; color:#f0e8d4;
+    font-weight:400; line-height:1.4; margin-bottom:24px;
+    font-family:"Songti SC",serif;
+    text-shadow:0 2px 24px rgba(0,0,0,.8);
+  }
+  .ivl-title .gold { color:#e8c878; }
+  .ivl-sub {
+    font-size:16px; line-height:2.1; color:#d8ccb0;
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    text-shadow:0 1px 12px rgba(0,0,0,.8);
+  }
+
+  /* ===== 战队活动 ===== */
+  .activity-list { display:grid; grid-template-columns:1fr; gap:20px; }
+  .activity {
+    display:grid; grid-template-columns:120px 1fr auto; gap:40px; align-items:center;
+    padding:32px 36px;
+    border:1px solid rgba(201,163,90,.18);
+    background:linear-gradient(90deg, rgba(42,20,58,.4), transparent);
+    transition:all .4s; cursor:none;
+  }
+  .activity:hover { border-color:#c9a35a; transform:translateX(8px); box-shadow:-8px 0 30px rgba(201,163,90,.15); }
+  .activity .date { text-align:center; }
+  .activity .date .month { font-size:13px; letter-spacing:3px; color:#c9a35a; }
+  .activity .date .day { font-size:42px; color:#f0e8d4; font-family:"Songti SC",serif; line-height:1; }
+  .activity .body h4 { font-size:20px; letter-spacing:3px; color:#f0e8d4; font-weight:400; margin-bottom:8px; }
+  .activity .body p { font-size:14px; color:#a89e88; line-height:1.8; font-family:"PingFang SC",sans-serif; }
+  .activity .tag {
+    font-size:11px; letter-spacing:3px; color:#c9a35a;
+    border:1px solid rgba(201,163,90,.4); padding:6px 14px;
+  }
+
+  /* ===== footer ===== */
+  footer {
+    text-align:center; padding:70px 20px;
+    border-top:1px solid rgba(201,163,90,.15);
+    background:linear-gradient(180deg, transparent, rgba(74,31,107,.15));
+  }
+  footer .foot-logo { font-size:32px; letter-spacing:10px; color:#f0e8d4; margin-bottom:18px; }
+  footer .foot-logo .gold { color:#c9a35a; }
+  footer .foot-sub { font-size:13px; color:#8a8095; letter-spacing:4px; margin-bottom:30px; font-style:italic; }
+  footer .links { display:flex; gap:28px; justify-content:center; margin-bottom:30px; }
+  footer .links a { font-size:12px; letter-spacing:3px; color:#a89e88; transition:color .3s; }
+  footer .links a:hover { color:#e8c878; }
+  footer .copyright { font-size:11px; color:#6a6076; letter-spacing:3px; }
+
+  /* 滚动渐显 */
+  .reveal { opacity:0; transform:translateY(40px); transition:all 1.1s cubic-bezier(.2,.7,.2,1); }
+  .reveal.in { opacity:1; transform:translateY(0); }
+
+  /* 响应式 */
+  @media (max-width:900px) {
+    nav { padding:14px 20px; }
+    .nav-links { display:none; }
+    section { padding:90px 22px; }
+    .intro-grid { grid-template-columns:1fr; gap:50px; }
+    .member-list { grid-template-columns:1fr; }
+    .event-grid { grid-template-columns:1fr; }
+    .cpl-gallery { grid-template-columns:1fr; }
+    .recruit-cta { grid-template-columns:1fr; padding:36px 28px; }
+    .activity { grid-template-columns:80px 1fr; }
+    .activity .tag { grid-column:2; justify-self:start; }
+  }
+</style>
+</head>
+<body>
+
+<div class="fog"></div>
+<div class="cur" id="cur1"></div>
+<div class="cur ring" id="cur2"></div>
+
+<!-- ===== 开屏 Splash ===== -->
+<div class="splash" id="splash">
+  <div class="splash-bg" id="splashBg"></div>
+  <canvas id="particleCanvas"></canvas>
+  <div class="splash-vignette"></div>
+  <div class="splash-prompt" id="splashPrompt">
+    <div class="ring"><div class="dot"></div></div>
+    <div class="txt">轻 点 破 镜</div>
+    <div class="sub">TAP TO ENTER</div>
+  </div>
+  <div class="splash-content">
+    <svg class="splash-logo" id="splashLogo" viewBox="0 0 1080 300" preserveAspectRatio="xMidYMid meet" aria-label="YUNX">
+      <defs>
+        <linearGradient id="platinumFill" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#ffffff"/>
+          <stop offset="35%" stop-color="#f4f4f4"/>
+          <stop offset="65%" stop-color="#d8d8dc"/>
+          <stop offset="100%" stop-color="#888890"/>
+        </linearGradient>
+        <filter id="platinumGlow" x="-30%" y="-30%" width="160%" height="160%">
+          <feGaussianBlur stdDeviation="8" result="blur"/>
+          <feFlood flood-color="#e8e8f0" flood-opacity="0.7"/>
+          <feComposite in2="blur" operator="in" result="glow"/>
+          <feMerge>
+            <feMergeNode in="glow"/>
+            <feMergeNode in="SourceGraphic"/>
+          </feMerge>
+        </filter>
+        <filter id="deepShadow" x="-20%" y="-20%" width="140%" height="140%">
+          <feDropShadow dx="0" dy="8" stdDeviation="5" flood-color="#000" flood-opacity="0.75"/>
+        </filter>
+      </defs>
+      <g filter="url(#platinumGlow) url(#deepShadow)"
+         stroke="#e0e0e8" stroke-width="1.5" stroke-linejoin="round"
+         fill="url(#platinumFill)"
+         font-family="'Trajan Pro','Copperplate Gothic Bold','Cinzel','Cambria','Georgia',serif"
+         font-weight="700" font-size="240" text-anchor="middle" letter-spacing="20">
+        <text class="ch" x="160" y="220">Y</text>
+        <text class="ch" x="400" y="220">U</text>
+        <text class="ch" x="640" y="220">N</text>
+        <text class="ch" x="880" y="220">X</text>
+      </g>
+    </svg>
+  </div>
+  <div class="splash-hint" id="splashHint">
+    <span>轻点屏幕进入</span>
+    <span class="dot"></span>
+    <span>按任意键 · 或稍候自动进入</span>
+  </div>
+</div>
+
+<!-- ===== 导航 ===== -->
+<nav>
+  <div class="logo">YUNX<span class="accent">◆</span>战队</div>
+  <ul class="nav-links">
+    <li><a href="#intro">战队</a></li>
+    <li><a href="#cpl">CPL</a></li>
+    <li><a href="#event">广白杯</a></li>
+    <li><a href="#activity">活动</a></li>
+  </ul>
+  <a href="#cpl" class="nav-cta">CPL 赛事</a>
+</nav>
+
+<!-- ===== Hero ===== -->
+<header class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-content">
+    <div class="eyebrow">YUNX ESPORTS · 第五人格高校战队</div>
+    <h1>YUNX</h1>
+    <div class="tagline">友谊长存 · 战无不胜</div>
+  </div>
+  <div class="scroll-cue">SCROLL ↓</div>
+</header>
+
+<!-- ===== 战队介绍 ===== -->
+<section id="intro" class="reveal">
+  <div class="eyebrow-line left">CHAPTER I · 战队</div>
+  <h2 class="sec-title">一群<span class="gold">志同道合的好友</span> · 扬帆起航</h2>
+  <p class="sec-sub">YUNX 战队成立于 2023 年 10 月，是一支第五人格高校电竞战队。我们由一群热爱这款游戏的同窗组成，凭着一腔热血与默契，从校园排位走到公开赛场。</p>
+
+  <div class="ornament"><div class="dot"></div><div class="diamond"></div><div class="dot"></div></div>
+
+  <div class="team-photo reveal">
+    <div class="team-photo-wrap">
+      <img src="team.jpg" alt="YUNX 战队 · CPL 2025 大合照" />
+      <div class="team-photo-caption">
+        <div class="cp-tag">2026</div>
+        <div class="cp-text">今年团建聚会合照</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="intro-grid">
+    <div class="intro-left">
+      <div class="intro-text">
+        <p><span class="drop">Y</span>UNX 成立至今，已组建多支分队征战各类高校赛事，在广州高校赛圈积攒下相当的知名度。我们不只是战队，更是一群志同道合的好友——在课堂之外，用指尖与默契，一起谱写精彩的大学生活，与一场关于电竞的故事。</p>
+        <p>战队创办「广白杯」、主办 CPL 赛事，为高校第五人格生态搭建舞台；并荣获 CPL 高校赛特别季「最佳团队协作奖」。荣誉是昨夜的灯火，扬帆才是今晨的方向——YUNX 仍在好友的肩上，驶向更远的对决。</p>
+        <div class="creed">
+          「 同窗一杯酒，赛场万盏灯。<br>　友谊长存，战无不胜。 」
+          <span class="signature">—— YUNX 战队训</span>
+        </div>
+      </div>
+
+      <div class="member-photo vertical">
+        <img src="zhandui5.jpg" alt="战队点滴" />
+        <div class="photo-caption">我们的点点滴滴</div>
+      </div>
+    </div>
+
+    <div class="member-list">
+      <div class="member-photo">
+        <img src="zhandui1.jpg" alt="战队成员 1" />
+      </div>
+      <div class="member-photo">
+        <img src="zhandui2.jpg" alt="战队成员 2" />
+      </div>
+      <div class="member-photo">
+        <img src="zhandui3.jpg" alt="战队成员 3" />
+      </div>
+      <div class="member-photo">
+        <img src="zhandui4.jpg" alt="战队成员 4" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== CPL 赛事（重点板块） ===== -->
+<section id="cpl">
+  <div class="cpl-inner">
+    <div class="eyebrow-line left">CHAPTER II · CPL</div>
+    <h2 class="sec-title"><span class="gold">CPL</span> · YUNX 主办高校联赛</h2>
+    <p class="sec-sub">CPL 是由 YUNX 战队发起并全程执行的第五人格高校赛事品牌，面向全国高校学子，致力于为校园电竞搭建专业、热血、公平的对决舞台。</p>
+
+    <div class="cpl-hero reveal">
+      <div class="cpl-visual">
+        <img src="cpl1.jpg" alt="CPL 赛事现场" />
+      </div>
+      <div class="cpl-info">
+        <span class="cpl-tag">EXECUTED BY YUNX</span>
+        <h3>由 YUNX 战队<br><span class="gold">全程主办执行</span></h3>
+        <p class="lead">从赛制策划、赛程编排、解说邀约到线下落地，CPL 的每一环节都由 YUNX 战队亲手操办。我们用参赛的经验办赛，用办赛的反哺参赛——只为让每一位高校选手，都能在 CPL 的赛场上打出属于自己的高光时刻。</p>
+        <p class="lead">2025 年 CPL 特别季，YUNX 战队更斩获「最佳团队协作奖」，以参赛与办赛的双重身份，为高校第五人格生态写下注脚。</p>
+        <div class="cpl-stats">
+          <div class="cpl-stat"><div class="v">32+</div><div class="l">参赛高校战队</div></div>
+          <div class="cpl-stat"><div class="v">2025</div><div class="l">CPL 特别季举办</div></div>
+          <div class="cpl-stat"><div class="v">★</div><div class="l">最佳团队协作奖</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="cpl-gallery reveal">
+      <div class="cpl-gallery-item"><img src="cpl2.jpg" alt="CPL 现场 1" /></div>
+      <div class="cpl-gallery-item"><img src="cpl3.jpg" alt="CPL 现场 2" /></div>
+      <div class="cpl-gallery-item"><img src="cpl4.jpg" alt="CPL 现场 3" /></div>
+      <div class="cpl-gallery-item"><img src="cpl5.jpg" alt="CPL 现场 4" /></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== IVL 官方舞台 ===== -->
+<section id="ivl" class="ivl-section reveal">
+  <div class="ivl-bg">
+    <img src="ivl1.jpg" alt="IVL 官方赛事舞台" />
+    <canvas id="goldRain"></canvas>
+    <div class="ivl-overlay"></div>
+  </div>
+  <div class="ivl-content">
+    <div class="ivl-tag">FROM CPL TO IVL</div>
+    <h2 class="ivl-title">优秀成员经赛事淬炼<br><span class="gold">步入官方赛事舞台</span></h2>
+    <p class="ivl-sub">从高校赛场起步，经 CPL 等赛事的打磨与培训，YUNX 的优秀成员正一步步登上 IVL 官方职业赛事的舞台——让高校的火种，燃向更辽阔的天地。</p>
+  </div>
+</section>
+
+<!-- ===== 广白杯 ===== -->
+<section id="event" class="reveal">
+  <div class="eyebrow-line left">CHAPTER III · 广白杯</div>
+  <h2 class="sec-title"><span class="gold">广白杯</span>· 第五人格公开邀请赛</h2>
+  <p class="sec-sub">由 YUNX 战队创办的第五人格公开邀请赛，取「白夜将尽、广烛未眠」之意，邀高校战队共聚赛场，争夺烛台之巅。</p>
+
+  <div class="event-grid">
+    <div class="event-card">
+      <img src="gb1.jpg" alt="广白杯 · 赛事一" />
+      <div class="cap">
+        <div class="num">SEASON I</div>
+        <h4>广白杯 · 壹</h4>
+        <p>首届广白杯启航，高校战队齐聚，点燃校园电竞第一盏灯。</p>
+      </div>
+    </div>
+    <div class="event-card">
+      <img src="gb2.jpg" alt="广白杯 · 赛事二" />
+      <div class="cap">
+        <div class="num">SEASON II</div>
+        <h4>广白杯 · 贰</h4>
+        <p>规模扩大，赛制升级，更多高校战队加入对决之夜。</p>
+      </div>
+    </div>
+    <div class="event-card">
+      <img src="gb3.jpg" alt="广白杯 · 赛事三" />
+      <div class="cap">
+        <div class="num">SEASON III</div>
+        <h4>广白杯 · 叁</h4>
+        <p>第三届广白杯蓄势待发，全新赛季，等待最强战队登顶。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 战队活动 ===== -->
+<section id="activity" class="reveal">
+  <div class="eyebrow-line left">CHAPTER IV · 活动</div>
+  <h2 class="sec-title">不止于赛 · <span class="gold">亦为相聚</span></h2>
+  <p class="sec-sub">除参赛之外，YUNX 还在赛季间穿插直播、教学、线下聚会与公益联动，让战队不只是五个人的赛场，而是一群人的夜。</p>
+
+  <div class="ornament"><div class="dot"></div><div class="diamond"></div><div class="dot"></div></div>
+
+  <div class="activity-list">
+    <div class="activity">
+      <div class="date"><div class="month">九月</div><div class="day">14</div></div>
+      <div class="body">
+        <h4>夜话直播间 · 第八期</h4>
+        <p>队长夜枫与雾时 B 站同步开播，复盘广白杯贰决赛失误，并抽取 10 位观众送定制角色立绘。</p>
+      </div>
+      <div class="tag">直播</div>
+    </div>
+    <div class="activity">
+      <div class="date"><div class="month">九月</div><div class="day">21</div></div>
+      <div class="body">
+        <h4>民间玩家训练营 · 上海站</h4>
+        <p>YUNX 全员线下带队，针对七阶以下求生者开展牵制与救人专题训练，限额 24 人，免费参与。</p>
+      </div>
+      <div class="tag">线下</div>
+    </div>
+    <div class="activity">
+      <div class="date"><div class="month">十月</div><div class="day">05</div></div>
+      <div class="body">
+        <h4>战队五周年纪念夜</h4>
+        <p>线上纪录片首映 + 全员连麦，回望 2019 至 2024 的烛火之路，限定周边将于当晚开售。</p>
+      </div>
+      <div class="tag">纪念</div>
+    </div>
+    <div class="activity">
+      <div class="date"><div class="month">十月</div><div class="day">19</div></div>
+      <div class="body">
+        <h4>广白杯叁 · 抽签夜直播</h4>
+        <p>32 支参赛战队抽签分组，YUNX 与特邀嘉宾共同解说签运，开启本赛季序幕。</p>
+      </div>
+      <div class="tag">赛事</div>
+    </div>
+    <div class="activity">
+      <div class="date"><div class="month">十一月</div><div class="day">02</div></div>
+      <div class="body">
+        <h4>烛火公益 · 第二期</h4>
+        <p>与孤独症儿童援助机构合作，YUNX 全员陪玩一晚，所有打赏收入全额捐赠。</p>
+      </div>
+      <div class="tag">公益</div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== footer ===== -->
+<footer>
+  <div class="foot-logo">YUNX<span class="gold">◆</span></div>
+  <div class="foot-sub">夜未央 · 战未休</div>
+  <div class="links">
+    <a href="#">B站</a><a href="#">微博</a><a href="#">抖音</a><a href="#">小红书</a><a href="#">QQ群</a>
+  </div>
+  <div class="copyright">© 2026 YUNX ESPORTS · ALL RIGHTS RESERVED · 本网站为同人宣传站，与官方无隶属关系</div>
+</footer>
+
+<script>
+  /* ===== 自定义光标 ===== */
+  const c1=document.getElementById('cur1'), c2=document.getElementById('cur2');
+  let mx=0,my=0,cx=0,cy=0;
+  addEventListener('mousemove',e=>{ mx=e.clientX; my=e.clientY; c1.style.left=mx+'px'; c1.style.top=my+'px'; });
+  (function loop(){ cx+=(mx-cx)*.15; cy+=(my-cy)*.15; c2.style.left=cx+'px'; c2.style.top=cy+'px'; requestAnimationFrame(loop); })();
+  document.querySelectorAll('a,.member-card,.activity,.event-block,.btn-apply,.nav-cta').forEach(el=>{
+    el.addEventListener('mouseenter',()=>{ c2.style.width='56px'; c2.style.height='56px'; });
+    el.addEventListener('mouseleave',()=>{ c2.style.width='38px'; c2.style.height='38px'; });
+  });
+
+  /* ===== Splash 控制：玻璃碎裂 + 颗粒汇聚 ===== */
+  const splash=document.getElementById('splash');
+  const splashBg=document.getElementById('splashBg');
+  const glassLayer=document.getElementById('glassLayer');
+  const crackFlash=document.getElementById('crackFlash');
+  const particleCanvas=document.getElementById('particleCanvas');
+  const splashPrompt=document.getElementById('splashPrompt');
+  const splashLogo=document.getElementById('splashLogo');
+  const splashHint=document.getElementById('splashHint');
+  const pctx=particleCanvas.getContext('2d');
+  let opened=false;
+
+  function openSite(){
+    if(opened) return; opened=true;
+    splash.classList.add('fade-out');
+    document.body.style.overflow='';
+    setTimeout(()=>{ splash.style.display='none'; }, 1400);
+  }
+  document.body.style.overflow='hidden';
+
+  /* 点击触发：top 淡出 + bg1 渐显 */
+  let triggered=false;
+  function onEnter(){
+    if(triggered) return; triggered=true;
+    splashBg.classList.add('fade-out');
+    splashPrompt.classList.add('hide');
+    startReveal();
+  }
+
+  /* bg1 从黑渐显 */
+  function startReveal(){
+    const img=new Image();
+    img.crossOrigin='anonymous';
+    img.onload=()=>{
+      const W=innerWidth, H=innerHeight;
+      particleCanvas.width=W; particleCanvas.height=H;
+      // cover 方式绘制
+      const scale=Math.max(W/img.width, H/img.height);
+      const dw=img.width*scale, dh=img.height*scale;
+      const dx=(W-dw)/2, dy=(H-dh)/2;
+      pctx.drawImage(img, 0,0,img.width,img.height, dx,dy,dw,dh);
+      // 触发 CSS 渐显动画
+      particleCanvas.classList.add('show');
+      // 动画 3.2s 完成后进入下一阶段
+      setTimeout(onRevealComplete, 3200);
+    };
+    img.onerror=()=>{
+      particleCanvas.classList.add('show');
+      onRevealComplete();
+    };
+    img.src='bg1.jpg';
+  }
+
+  function onRevealComplete(){
+    // bg1 渐显完成 → YUNX 从近推远
+    splashLogo.classList.add('recede');
+    // 底部细字浮现
+    setTimeout(()=>splashHint.classList.add('show'), 800);
+    // 自动进场
+    setTimeout(openSite, 4500);
+  }
+
+  /* 点击 / 按键触发 */
+  splash.addEventListener('click', onEnter);
+  document.addEventListener('keydown', e=>{ if(!triggered) onEnter(); });
+  // 长时间兜底自动触发
+  setTimeout(()=>{ if(!triggered) onEnter(); }, 8000);
+
+  /* ===== 滚动渐显 ===== */
+  const io=new IntersectionObserver(es=>{
+    es.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } });
+  },{threshold:.12});
+  document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+
+  /* ===== IVL 金雨特效 ===== */
+  (function(){
+    const canvas=document.getElementById('goldRain');
+    if(!canvas) return;
+    const ctx=canvas.getContext('2d');
+    let W,H,drops=[],raf;
+    function resize(){ W=canvas.width=innerWidth; H=canvas.height=innerHeight; }
+    function init(){
+      const count=Math.min(180, Math.floor(W*H/9000));
+      drops=Array.from({length:count},()=>({
+        x:Math.random()*W,
+        y:Math.random()*H,
+        len:8+Math.random()*22,
+        speed:2+Math.random()*5,
+        thick:1+Math.random()*1.8,
+        alpha:.3+Math.random()*.5,
+        sway:(Math.random()-.5)*0.4
+      }));
+    }
+    resize(); init();
+    addEventListener('resize',()=>{ resize(); init(); });
+
+    function draw(){
+      ctx.clearRect(0,0,W,H);
+      drops.forEach(d=>{
+        d.y+=d.speed;
+        d.x+=d.sway;
+        if(d.y>H+30){ d.y=-30; d.x=Math.random()*W; }
+        const grad=ctx.createLinearGradient(d.x, d.y, d.x-d.sway*4, d.y+d.len);
+        grad.addColorStop(0, `rgba(232,200,120,0)`);
+        grad.addColorStop(.5, `rgba(232,200,120,${d.alpha*0.5})`);
+        grad.addColorStop(1, `rgba(255,240,200,${d.alpha})`);
+        ctx.strokeStyle=grad;
+        ctx.lineWidth=d.thick;
+        ctx.lineCap='round';
+        ctx.beginPath();
+        ctx.moveTo(d.x, d.y);
+        ctx.lineTo(d.x-d.sway*4, d.y+d.len);
+        ctx.stroke();
+        // 头部亮斑
+        ctx.beginPath();
+        ctx.arc(d.x, d.y, d.thick*0.9, 0, Math.PI*2);
+        ctx.fillStyle=`rgba(255,245,210,${d.alpha})`;
+        ctx.shadowBlur=8; ctx.shadowColor='#e8c878';
+        ctx.fill();
+        ctx.shadowBlur=0;
+      });
+      raf=requestAnimationFrame(draw);
+    }
+    // 只在 IVL 板块可见时运行
+    const ivlSec=document.getElementById('ivl');
+    const rainIo=new IntersectionObserver(es=>{
+      es.forEach(e=>{
+        if(e.isIntersecting){ if(!raf) draw(); }
+        else { cancelAnimationFrame(raf); raf=null; ctx.clearRect(0,0,W,H); }
+      });
+    },{threshold:.1});
+    rainIo.observe(ivlSec);
+  })();
+
+  /* ===== 图片加载兜底：bg1 加载失败时切回渐变占位（用 Image 对象，无网络报错） ===== */
+  (function(){
+    const probe=new Image();
+    probe.onload=()=>{ /* bg1 存在，无需处理 */ };
+    probe.onerror=()=>{
+      document.querySelectorAll('.splash-bg, .hero-bg').forEach(el=>{
+        el.style.background='radial-gradient(circle at 50% 30%, #4a1f6b, #1a0a25 60%, #0a0612)';
+      });
+    };
+    probe.src='bg1.jpg';
+  })();
+</script>
+</body>
+</html>
