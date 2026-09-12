@@ -882,6 +882,36 @@
 </footer>
 
 <script>
+  /* ===== 版本戳：破坏浏览器缓存 ===== */
+  const V='v2';
+  // 重写 style 标签里的所有 url()
+  document.querySelectorAll('style').forEach(styleEl=>{
+    let css=styleEl.textContent;
+    if(!css.includes('url(')) return;
+    css=css.replace(/url\(["']?([^"')]+?\.(jpg|jpeg|png|webp))["']?\)/gi,(m,u)=>{
+      if(u.includes('?')) return m;
+      return `url("${u}?${V}")`;
+    });
+    styleEl.textContent=css;
+  });
+  // 给所有 <img src> 加版本戳
+  document.querySelectorAll('img[src]').forEach(img=>{
+    if(!img.src.includes('?')) img.src+='?'+V;
+  });
+  // 全局拦截 Image 构造函数，加版本戳
+  const _origImage=window.Image;
+  window.Image=function(){
+    const img=new _origImage();
+    let _src='';
+    try{
+      Object.defineProperty(img,'src',{
+        set(v){ _src=v; img.setAttribute('src',v.includes('?')?v:v+'?'+V); },
+        get(){ return _src; }
+      });
+    }catch(e){}
+    return img;
+  };
+
   /* ===== 自定义光标 ===== */
   const c1=document.getElementById('cur1'), c2=document.getElementById('cur2');
   let mx=0,my=0,cx=0,cy=0;
@@ -925,7 +955,7 @@
   function startReveal(){
     const bg1Layer=document.createElement('div');
     bg1Layer.id='bg1Layer';
-    bg1Layer.style.cssText='position:absolute;inset:0;background:#000 url("bg1.jpg") center/cover no-repeat;z-index:2;opacity:0;filter:blur(14px) brightness(0) contrast(0.5);';
+    bg1Layer.style.cssText='position:absolute;inset:0;background:#000 url("bg1.jpg?'+V+'") center/cover no-repeat;z-index:2;opacity:0;filter:blur(14px) brightness(0) contrast(0.5);';
     splashBg.parentElement.insertBefore(bg1Layer, splashBg.nextSibling);
     // 预加载 bg1，确保图片就绪再开始动画
     const preload=new Image();
@@ -941,7 +971,7 @@
       bg1Layer.style.animation='bgReveal 3.6s cubic-bezier(.2,.7,.2,1) forwards';
       setTimeout(onRevealComplete, 3600);
     };
-    preload.src='bg1.jpg';
+    preload.src='bg1.jpg?'+V;
   }
 
   function onRevealComplete(){
@@ -1034,7 +1064,7 @@
         el.style.background='radial-gradient(circle at 50% 30%, #4a1f6b, #1a0a25 60%, #0a0612)';
       });
     };
-    probe.src='bg1.jpg';
+    probe.src='bg1.jpg?'+V;
   })();
 </script>
 </body>
