@@ -813,6 +813,17 @@
   .rp-draft { font-style:normal; font-size:10px; color:#8a8095; border:1px solid rgba(138,128,149,.4); padding:1px 5px; }
   .rp-star { font-style:normal; color:#e8c878; font-size:14px; }
 
+  .recruit-qr {
+    margin-top:36px; text-align:center;
+    display:flex; flex-direction:column; align-items:center; gap:12px;
+  }
+  .recruit-qr .qr-box {
+    width:180px; height:180px; padding:10px;
+    border:1px solid rgba(201,163,90,.35); background:rgba(10,6,18,.5);
+  }
+  .recruit-qr .qr-box img { width:100%; height:100%; object-fit:contain; display:block; }
+  .recruit-qr .qr-tip { font-size:13px; color:#c9a35a; letter-spacing:2px; margin:0; }
+
   /* ===== 为爱发电 ===== */
   .gw-gallery {
     display:grid; grid-template-columns:repeat(4, 1fr); gap:16px; margin:40px 0 36px;
@@ -866,6 +877,11 @@
     border:1px solid rgba(201,163,90,.4); padding:6px 18px; transition:all .3s;
   }
   .join-card:hover .jc-cta { background:#c9a35a; color:#0a0612; }
+  .jc-qr {
+    width:120px; height:120px; margin:0 auto 18px; padding:6px;
+    border:1px solid rgba(201,163,90,.3); background:rgba(10,6,18,.4);
+  }
+  .jc-qr img { width:100%; height:100%; object-fit:contain; display:block; }
 
   @media (max-width:900px) {
     .recruit-top { grid-template-columns:1fr; gap:28px; }
@@ -1085,6 +1101,11 @@
     <div class="rp-card rp-featured"><span class="rp-icon">🖼️</span><span class="rp-name">直播工程素材美工</span><em class="rp-star">★</em></div>
     <div class="rp-card"><span class="rp-icon">🎙️</span><span class="rp-name">解说</span></div>
   </div>
+
+  <div class="recruit-qr">
+    <div class="qr-box"><img src="gzry.jpg" alt="工作人员预报名二维码" loading="lazy" decoding="async" /></div>
+    <p class="qr-tip">扫码预报名 · 加入工作人员队伍</p>
+  </div>
 </section>
 
 <!-- ===== 广白杯 ===== -->
@@ -1175,7 +1196,8 @@
       <div class="jc-icon">⚔️</div>
       <h3>YUNX 战队招募</h3>
       <p>想成为 YUNX 的一员？无论你是绝活哥还是萌新，只要热爱第五人格，我们都欢迎。</p>
-      <span class="jc-cta">了解战队 →</span>
+      <div class="jc-qr"><img src="gzry.jpg" alt="YUNX 战队招新二维码" loading="lazy" decoding="async" /></div>
+      <span class="jc-cta">扫码加入 →</span>
     </a>
     <a href="#event" class="join-card">
       <div class="jc-icon">🏆</div>
