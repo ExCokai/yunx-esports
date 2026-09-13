@@ -853,6 +853,25 @@
   .gw-quote p { font-size:17px; line-height:1.9; color:#e8c878; font-style:italic; margin-bottom:10px; }
   .gw-quote span { font-size:12px; letter-spacing:4px; color:#8a8095; }
 
+  .gw-video {
+    display:grid; grid-template-columns:auto 1fr auto; gap:24px; align-items:center;
+    margin-top:32px; padding:24px 28px; text-decoration:none;
+    border:1px solid rgba(201,163,90,.3);
+    background:linear-gradient(135deg, rgba(201,163,90,.06), rgba(74,31,107,.1));
+    transition:all .3s;
+  }
+  .gw-video:hover { border-color:rgba(201,163,90,.6); box-shadow:0 8px 40px rgba(201,163,90,.1); transform:translateY(-2px); }
+  .gwv-play {
+    width:56px; height:56px; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;
+    border-radius:50%; background:linear-gradient(135deg,#e8c878,#c9a35a);
+    color:#0a0612; font-size:20px; padding-left:4px;
+  }
+  .gwv-tag { font-size:11px; letter-spacing:3px; color:#c9a35a; }
+  .gwv-text h3 { font-size:17px; color:#f0e8d4; margin:6px 0 6px; }
+  .gwv-text p { font-size:13px; color:#8a8095; line-height:1.6; margin:0; }
+  .gwv-cta { font-size:13px; color:#c9a35a; letter-spacing:2px; white-space:nowrap; }
+
   /* ===== 加入我们 ===== */
   .center { text-align:center; }
   .eyebrow-line.center { justify-content:center; }
@@ -891,6 +910,8 @@
     .recruit-positions { grid-template-columns:repeat(2, 1fr); }
     .recruit-cta { grid-template-columns:1fr; gap:20px; text-align:center; padding:24px 20px; }
     .rc-qr { margin:0 auto; }
+    .gw-video { grid-template-columns:auto 1fr; gap:16px; padding:20px; }
+    .gwv-cta { grid-column:1 / -1; text-align:center; }
     .gw-gallery { grid-template-columns:repeat(2, 1fr); }
     .gw-cap { opacity:1; transform:none; }
     .join-cards { grid-template-columns:1fr; gap:18px; }
@@ -1183,6 +1204,16 @@
     <p>「我们不是在办一场比赛，我们是在为热爱这件事的人，搭一个舞台。」</p>
     <span>—— YUNX 工作人员集体</span>
   </div>
+
+  <a class="gw-video" href="https://www.bilibili.com/video/BV1QqMAzPEdr/?share_source=copy_web&vd_source=bd809752cc9dfa1c27e67344c8455d63" target="_blank" rel="noopener">
+    <div class="gwv-play">▶</div>
+    <div class="gwv-text">
+      <span class="gwv-tag">电竞幕后纪录片</span>
+      <h3>国内首部电竞幕后纪录片 · 第五人格 CPL《合卯》</h3>
+      <p>赛场的奇迹，不止台前。跟镜头走进 YUNX 工作人员的日与夜。</p>
+    </div>
+    <span class="gwv-cta">前往观看 →</span>
+  </a>
 </section>
 
 <!-- ===== 加入我们 ===== -->
