@@ -800,29 +800,32 @@
     display:grid; grid-template-columns:repeat(4, 1fr); gap:14px; margin-top:8px;
   }
   .rp-card {
-    display:flex; align-items:center; gap:10px; justify-content:center;
+    display:flex; flex-direction:column; align-items:flex-start; gap:6px;
     border:1px solid rgba(201,163,90,.22); background:rgba(10,6,18,.5);
-    padding:16px 12px; text-align:center; transition:all .3s; cursor:default;
+    padding:18px 16px; text-align:left; transition:all .3s; cursor:default;
+    position:relative;
   }
   .rp-card:hover { border-color:rgba(201,163,90,.5); transform:translateY(-3px); background:rgba(201,163,90,.06); }
   .rp-card.rp-featured {
     border-color:rgba(232,200,120,.5); background:linear-gradient(135deg, rgba(232,200,120,.1), rgba(201,163,90,.05));
   }
-  .rp-icon { font-size:20px; }
-  .rp-name { font-size:14px; color:#f0e8d4; letter-spacing:1px; }
-  .rp-draft { font-style:normal; font-size:10px; color:#8a8095; border:1px solid rgba(138,128,149,.4); padding:1px 5px; }
-  .rp-star { font-style:normal; color:#e8c878; font-size:14px; }
+  .rp-card .rp-icon { font-size:22px; }
+  .rp-card .rp-name { font-size:15px; color:#f0e8d4; letter-spacing:1px; font-weight:600; }
+  .rp-card .rp-desc { font-size:12px; color:#8a8095; line-height:1.6; }
+  .rp-draft { font-style:normal; font-size:10px; color:#8a8095; border:1px solid rgba(138,128,149,.4); padding:1px 6px; margin-left:6px; }
+  .rp-star { font-style:normal; font-size:10px; color:#0a0612; background:linear-gradient(90deg,#e8c878,#c9a35a); padding:2px 8px; margin-left:6px; font-weight:600; }
 
-  .recruit-qr {
-    margin-top:36px; text-align:center;
-    display:flex; flex-direction:column; align-items:center; gap:12px;
+  .recruit-cta {
+    margin-top:36px; padding:28px 32px;
+    display:grid; grid-template-columns:1fr auto; gap:32px; align-items:center;
+    border:1px solid rgba(201,163,90,.3);
+    background:linear-gradient(135deg, rgba(201,163,90,.08), rgba(74,31,107,.12));
   }
-  .recruit-qr .qr-box {
-    width:180px; height:180px; padding:10px;
-    border:1px solid rgba(201,163,90,.35); background:rgba(10,6,18,.5);
-  }
-  .recruit-qr .qr-box img { width:100%; height:100%; object-fit:contain; display:block; }
-  .recruit-qr .qr-tip { font-size:13px; color:#c9a35a; letter-spacing:2px; margin:0; }
+  .rc-text h3 { font-size:20px; color:#f0e8d4; margin-bottom:10px; }
+  .rc-text h3::before { content:""; display:inline-block; width:6px; height:18px; background:#c9a35a; margin-right:10px; vertical-align:-3px; }
+  .rc-text p { font-size:14px; line-height:1.8; color:#c8bca0; margin:0; }
+  .rc-qr { width:150px; height:150px; padding:8px; border:1px solid rgba(201,163,90,.4); background:rgba(10,6,18,.6); flex-shrink:0; }
+  .rc-qr img { width:100%; height:100%; object-fit:contain; display:block; }
 
   /* ===== 为爱发电 ===== */
   .gw-gallery {
@@ -886,6 +889,8 @@
   @media (max-width:900px) {
     .recruit-top { grid-template-columns:1fr; gap:28px; }
     .recruit-positions { grid-template-columns:repeat(2, 1fr); }
+    .recruit-cta { grid-template-columns:1fr; gap:20px; text-align:center; padding:24px 20px; }
+    .rc-qr { margin:0 auto; }
     .gw-gallery { grid-template-columns:repeat(2, 1fr); }
     .gw-cap { opacity:1; transform:none; }
     .join-cards { grid-template-columns:1fr; gap:18px; }
@@ -1091,18 +1096,21 @@
   </div>
 
   <div class="recruit-positions">
-    <div class="rp-card"><span class="rp-icon">🎬</span><span class="rp-name">导播</span></div>
-    <div class="rp-card"><span class="rp-icon">🎯</span><span class="rp-name">导演</span><em class="rp-draft">拟定</em></div>
-    <div class="rp-card"><span class="rp-icon">⚖️</span><span class="rp-name">裁判</span></div>
-    <div class="rp-card"><span class="rp-icon">👥</span><span class="rp-name">选手管理</span><em class="rp-draft">拟定</em></div>
-    <div class="rp-card rp-featured"><span class="rp-icon">🎨</span><span class="rp-name">宣传美工</span><em class="rp-star">★</em></div>
-    <div class="rp-card rp-featured"><span class="rp-icon">🖼️</span><span class="rp-name">直播工程素材美工</span><em class="rp-star">★</em></div>
-    <div class="rp-card"><span class="rp-icon">🎙️</span><span class="rp-name">解说</span></div>
+    <div class="rp-card"><span class="rp-icon">🎬</span><span class="rp-name">导播</span><span class="rp-desc">掌控直播画面切换，呈现最佳观赛视角</span></div>
+    <div class="rp-card"><span class="rp-icon">🎯</span><span class="rp-name">导演</span><em class="rp-draft">拟定</em><span class="rp-desc">统筹赛事流程与现场节奏</span></div>
+    <div class="rp-card"><span class="rp-icon">⚖️</span><span class="rp-name">裁判</span><span class="rp-desc">执裁比赛，保障公平公正</span></div>
+    <div class="rp-card"><span class="rp-icon">👥</span><span class="rp-name">选手管理</span><em class="rp-draft">拟定</em><span class="rp-desc">对接参赛选手与赛程通知</span></div>
+    <div class="rp-card rp-featured"><span class="rp-icon">🎨</span><span class="rp-name">宣传美工</span><em class="rp-star">重点</em><span class="rp-desc">海报与宣发物料设计，作品集产出</span></div>
+    <div class="rp-card rp-featured"><span class="rp-icon">🖼️</span><span class="rp-name">直播工程素材美工</span><em class="rp-star">重点</em><span class="rp-desc">直播画面包装与素材制作</span></div>
+    <div class="rp-card"><span class="rp-icon">🎙️</span><span class="rp-name">解说</span><span class="rp-desc">赛事现场解说，点燃赛场氛围</span></div>
   </div>
 
-  <div class="recruit-qr">
-    <div class="qr-box"><img src="gzry.jpg" alt="工作人员预报名二维码" loading="lazy" decoding="async" /></div>
-    <p class="qr-tip">扫码预报名 · 加入工作人员队伍</p>
+  <div class="recruit-cta">
+    <div class="rc-text">
+      <h3>预报名已开启</h3>
+      <p>扫码填写预报名信息，官方授权赛事等你加入——履历、技能、热爱，一个都不落下。</p>
+    </div>
+    <div class="rc-qr"><img src="gzry.jpg" alt="工作人员预报名二维码" loading="lazy" decoding="async" /></div>
   </div>
 </section>
 
